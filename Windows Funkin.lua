@@ -1,4 +1,4 @@
-versionW = 20
+versionW = 19
 language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
@@ -397,4 +397,5 @@ function onTweenCompleted(tag)
   if tag == 'rwf' then
     restartSong(false)
   end
+
 end
