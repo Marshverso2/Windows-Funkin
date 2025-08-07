@@ -1,4 +1,4 @@
-versionW = 19
+versionW = 20
 language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
@@ -111,7 +111,6 @@ function onCreate()
   
   setProperty('camGame.visible', false)
   setProperty('camHUD.visible', false)
-  setProperty('camOther.alpha', 0)
 
   text('versionW', 'v'..versionW, 100, 10, 2)
   setTextSize('versionW', 40)
@@ -145,6 +144,20 @@ function onCreate()
   addOptionCmd('id', 'Installed drivers', [[Driverquery -v && pause && exit /b]])
   addOptionCmd('ids', 'System Information', [[systeminfo && pause && exit /b]])
 
+  local getRepositoriesGit = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
+  local reporitoriesContent = getRepositoriesGit:read('*a')
+  getRepositoriesGit:close()
+  cacheGit = 1
+
+  for content in reporitoriesContent:gmatch('[^\n]+') do
+    local c1, c2, c3, c4 = content:match('^([^¨]+)¨([^¨]+)¨([^¨]+)¨(.*)')
+    addOptionCmd('g'..cacheGit, c1..' (GITHUB)', c2, c3, tobool(c4))
+    cacheGit = cacheGit + 1
+  end
+
+  addOptionCmd('voaris', 'View or add repository in script', [[start https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]])
+
+
   text('seta2', '<', 70, 355, 630)
   setProperty('seta2.angle', -90)
   setTextSize('seta2', 50)
@@ -174,25 +187,6 @@ function onCreate()
   else
     playMusic('breakfast', 0.5, true)
   end
-end
-
-function onCreatePost()
-  if not getDataFromSave('saiko', 'menu') then
-    return Function_Stop
-  end
-
-  local getRepositoriesGit = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
-  local reporitoriesContent = getRepositoriesGit:read('*a')
-  getRepositoriesGit:close()
-  cacheGit = 1
-
-  for content in reporitoriesContent:gmatch('[^\n]+') do
-    local c1, c2, c3, c4 = content:match('^([^¨]+)¨([^¨]+)¨([^¨]+)¨(.*)')
-    addOptionCmd('g'..cacheGit, c1..' (GITHUB)', c2, c3, tobool(c4))
-    cacheGit = cacheGit + 1
-  end
-
-  addOptionCmd('voaris', 'View or add repository in script', [[start https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]])
 
   makeLuaSprite('bg')
   makeGraphic('bg', screenWidth, screenHeight, '003380')
@@ -233,44 +227,35 @@ function onCreatePost()
   setProperty('gfWindows.antialiasing', false)
   addLuaSprite('gfWindows', false)
 
-  --[==[Obter o código no GitHub
-  local versionWindowsFunkin = io.popen("curl -s https://raw.githubusercontent.com/Marshverso/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua")
-  local scriptContent = versionWindowsFunkin:read("*a")
-  versionWindowsFunkin:close()
-  local versionNumber = scriptContent:match("local versionW = (%d+)")
+  runTimer('update', 1)
+end
 
-  --se a versão é desatualizada ou se você não tem ele, ele vai baixar
-  if tonumber(versionW) < tonumber(versionNumber) then
-    --[[local webScript = io.popen("curl -s https://raw.githubusercontent.com/Marshverso/Windows-Funkin/main/Windows%20Funkin.lua")
-    saveFile(scriptName, webScript:read("*a"), true)
-    webScript:close()
-    runTimer('rwf', 0.1)]]
-  else]==]
-  
-    --animação de entrada
-    doTweenAlpha('camOtherAl', 'camOther', 1, 5, 'sineInOut')
+function onCreatePost()
+  if not getDataFromSave('saiko', 'menu') then
+    return Function_Stop
+  end
 
-    doTweenX('titleX', 'title', screenWidth/1.9, 3, 'sineOut')
-    discord('WINDOWS FUNKIN', 'OPEN')
+  --animação de entrada
+  doTweenX('titleX', 'title', screenWidth/1.9, 3, 'sineOut')
+  discord('WINDOWS FUNKIN', 'OPEN')
     
-    for ii=1,#option.pag do
-      for i=1,#option.pag[ii] do
-        doTweenX(option.pag[ii][i][1]..'OptionX', option.pag[ii][i][1]..'Option', getProperty(option.pag[ii][i][1]..'Option.x'), 3, 'circOut')
-        setProperty(option.pag[ii][i][1]..'Option.x', -getProperty(option.pag[ii][i][1]..'Option.width'))
-      end
+  for ii=1,#option.pag do
+    for i=1,#option.pag[ii] do
+      doTweenX(option.pag[ii][i][1]..'OptionX', option.pag[ii][i][1]..'Option', getProperty(option.pag[ii][i][1]..'Option.x'), 3, 'circOut')
+      setProperty(option.pag[ii][i][1]..'Option.x', -getProperty(option.pag[ii][i][1]..'Option.width'))
     end
+  end
 
-    for i=1,2 do
-      doTweenX('seta'..i, 'seta'..i, getProperty('seta'..i..'.x'), 3, 'circOut')
-      setProperty('seta'..i..'.x', -getProperty('seta'..i..'.width'))
-    end
-    --
+  for i=1,2 do
+    doTweenX('seta'..i, 'seta'..i, getProperty('seta'..i..'.x'), 3, 'circOut')
+    setProperty('seta'..i..'.x', -getProperty('seta'..i..'.width'))
+  end
+  --
 
-    selectionOp()
-    changePage(0)
+  selectionOp()
+  changePage(0)
 
-    setPropertyFromClass('flixel.FlxG', 'autoPause', false)
-  --end
+  setPropertyFromClass('flixel.FlxG', 'autoPause', false)
 end
 
 function onUpdate()
@@ -392,10 +377,27 @@ function onTweenCompleted(tag)
   if tag == 'creditsX' then
     setProperty('credits.x', screenWidth+50)
     doTweenX('creditsX', 'credits', -getProperty('credits.width'), 60, 'linear')
+  end  
+end
+
+function onTimerCompleted(tag, loops, loopsLeft)
+  if tag == 'update' then
+    --Obter o código no GitHub
+    local versionWindowsFunkin = io.popen("curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua")
+    local scriptContent = versionWindowsFunkin:read("*a")
+    versionWindowsFunkin:close()
+    local versionOnline = scriptContent:match("local versionW = (%d+)")
+
+    --se a versão é desatualizada ou se você não tem ele, ele vai baixar
+    if tonumber(versionW) < tonumber(versionOnline) then
+      local webScript = io.popen("curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua")
+      saveFile(scriptName, webScript:read("*a"), true)
+      webScript:close()
+      runTimer('rwf', 0.5)
+    end
   end
 
   if tag == 'rwf' then
     restartSong(false)
   end
-
 end
