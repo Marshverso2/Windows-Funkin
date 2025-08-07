@@ -383,17 +383,17 @@ end
 function onTimerCompleted(tag, loops, loopsLeft)
   if tag == 'update' then
     --Obter o código no GitHub
-    local versionWindowsFunkin = io.popen("curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua")
-    local scriptContent = versionWindowsFunkin:read("*a")
+    versionWindowsFunkin = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+    scriptContent = versionWindowsFunkin:read('*a')
     versionWindowsFunkin:close()
-    local versionOnline = scriptContent:match("local versionW = (%d+)")
+    versionOnline = scriptContent:match('versionW = (%d+)')
 
     --se a versão é desatualizada ou se você não tem ele, ele vai baixar
     if tonumber(versionW) < tonumber(versionOnline) then
-      local webScript = io.popen("curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua")
-      saveFile(scriptName, webScript:read("*a"), true)
+      webScript = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+      saveFile(scriptName, webScript:read('*a'), true)
       webScript:close()
-      runTimer('rwf', 0.5)
+      runTimer('rwf', 1)
     end
   end
 
