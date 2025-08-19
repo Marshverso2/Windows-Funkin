@@ -1,4 +1,4 @@
-versionW = 22
+versionW = 23
 language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
@@ -132,8 +132,9 @@ function onCreate()
   addOptionCmd('ua', 'Update applications', [[winget upgrade --all]])
   addOptionCmd('sy', 'System settings', [[msconfig]])
   addOptionCmd('rc', 'Remote connection', [[mstsc]])
-  addOptionCmd('m', 'Maintenance (PC RESET)', [[msdt.exe /id MaintenanceDiagnostic]])
   addOptionCmd('id', 'Installed drivers', [[Driverquery -v && pause && exit /b]])
+  addOptionCmd('pd', 'Power diagnosis', [[powercfg -energy && pause && exit /b]])
+  addOptionCmd('m', 'Maintenance (PC RESET)', [[msdt.exe /id MaintenanceDiagnostic]])
   addOptionCmd('ids', 'System Information', [[systeminfo && pause && exit /b]])
 
   local getRepositoriesGit = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
