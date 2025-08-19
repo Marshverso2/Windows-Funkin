@@ -1,4 +1,4 @@
-versionW = 20
+versionW = 22
 language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
@@ -14,14 +14,6 @@ repositories = {}
 colunaDeTexto = 100
 
 function onStartCountdown() if getDataFromSave('saiko', 'menu') then return Function_Stop end end
-
-function discord(details, state)
-  if tonumber(version:sub(1, 3)) >= 0.7 then
-    changeDiscordPresence(details, state, nil, false)
-  else
-    changePresence(details, state, nil, false)
-  end
-end
 
 function text(tag, text, width, x, y)
   makeLuaText(tag, text, width, x, y)
@@ -127,9 +119,9 @@ function onCreate()
   setTextSize('seta1', 50)
 
   addOptionCmd('cf', 'Check files', [[sfc /scannow && dism /online /cleanup-image /scanhealth && dism /online /cleanup-image /restorehealth]])
-  addOptionCmd('cs', 'Check storage', [[chkdsk ]]..toType..[[: /f /r /x]], 'STORAGE LETTER')
+  addOptionCmd('cs', 'Check storage', [[chkdsk ]]..toType..[[: /f /r /x]], 'STORAGE LETTER (EX: C)')
   addOptionCmd('cr', 'Check ram (PC RESET)', [[mdsched.exe]])
-  addOptionCmd('os', 'Optimize storage (HD EXCLUSIVE)', [[defrag ]]..toType..[[: /O]], 'STORAGE LETTER')
+  addOptionCmd('os', 'Optimize storage (HD EXCLUSIVE)', [[defrag ]]..toType..[[: /O]], 'STORAGE LETTER (EX: C)')
   addOptionCmd('cc', 'Clear cache', [[rmdir /s /q %TEMP% && rmdir /s /q C:\Windows\Temp && rmdir /s /q C:\Windows\Prefetch]])
   addOptionCmd('csc', 'Clear storage cache', [[cleanmgr]])
   addOptionCmd('ps', 'Performance settings', [[SystemPropertiesPerformance]])
@@ -166,7 +158,7 @@ function onCreate()
   text('credits', 'Creator: Marshverso (YT)     Menu design: FacheFNF (DC) and Marshverso (YT)     Beta Testers: FandeFNF (YT) and Erislwlol(Twitter)', 0, screenWidth+50, screenHeight - 37)
   setTextSize('credits', 30)
   setTextAlignment('credits', 'left')
-  doTweenX('creditsX', 'credits', -getProperty('credits.width'), 60, 'linear')
+  doTweenX('creditsX', 'credits', -getProperty('credits.width'), 30, 'linear')
 
   makeLuaSprite('sBg')
   makeGraphic('sBg', screenWidth, screenHeight, '000000')
@@ -237,7 +229,6 @@ function onCreatePost()
 
   --animação de entrada
   doTweenX('titleX', 'title', screenWidth/1.9, 3, 'sineOut')
-  discord('WINDOWS FUNKIN', 'OPEN')
     
   for ii=1,#option.pag do
     for i=1,#option.pag[ii] do
@@ -259,7 +250,7 @@ function onCreatePost()
 end
 
 function onUpdate()
-  if (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.SIX') or getPropertyFromClass('flixel.FlxG', 'keys.justPressed.ESCAPE')) and not option.stop then
+  if (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.SIX') or (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.ESCAPE') and getDataFromSave('saiko', 'menu'))) and not option.stop then
     if version >= '0.7.0' then
       setPropertyFromClass('flixel.FlxG', 'autoPause', getPropertyFromClass('backend.ClientPrefs', 'data.autoPause'))
     end
@@ -295,10 +286,8 @@ function onUpdate()
         setTextString('description', option.pag[option.pagView][option.select][3])
         doTweenAlpha('descriptionAl', 'description', 1, 0.5, 'linear')
         doTweenAlpha('sBgAl', 'sBg', 0.7, 0.5, 'linear')
-        discord('WINDOWS FUNKIN', 'Typing. . .')
       elseif not option.stop then
         cmd(option.pag[option.pagView][option.select][2], option.pag[option.pagView][option.select][4])
-        discord('WINDOWS FUNKIN', 'EXECUNTION')
       end
     end
   end
