@@ -108,7 +108,7 @@ function onCreate()
   setTextSize('versionW', 40)
   screenCenter('versionW', 'x')
 
-  text('title', 'WINDOWS\nFUNKIN\n(Wifi Update)', 500, screenWidth, 50)
+  text('title', 'WINDOWS\nFUNKIN', 500, screenWidth, 50)
   setTextSize('title', 100)
   setTextAlignment('title', 'center')
   screenCenter('title', 'y')
@@ -129,7 +129,7 @@ function onCreate()
   addOptionCmd('cd', 'Clear dns', [[ipconfig /flushdns]])
 
   addOptionCmd('twoao', 'Turn wifi off and on (Ethernet)', [[netsh interface set interface name="Ethernet" admin=disable & ECHO the router will turn on after the countdown & timeout /t TAPYNG /nobreak & netsh interface set interface name="Ethernet" admin=enable & completed]])
-  addOptionCmd('srp', 'solve router problems (Ethernet + PC RESET)', [[netsh winsock reset & netsh int ip reset & shutdown /r /t 0]])
+  addOptionCmd('srp', 'solve router problems (Ethernet+PC RESET)', [[netsh winsock reset & netsh int ip reset & shutdown /r /t 0]])
   addOptionCmd('smtc', 'send message to computers', [[MSG * "]]..toType..[["]], 'write your message')
 
   addOptionCmd('ewe', 'Enable Windows emulator (PC RESET)', [[Dism /online /Enable-Feature /FeatureName:"Containers-DisposableClientVM" -All && Y]])
@@ -396,3 +396,4 @@ function onTimerCompleted(tag, loops, loopsLeft)
     restartSong(false)
   end
 end
+
