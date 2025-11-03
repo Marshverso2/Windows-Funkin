@@ -1,4 +1,4 @@
-versionW = 24
+versionW = 25
 language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
@@ -12,6 +12,7 @@ option = {
 blockColors = {'00ff99', '6666ff', 'ff3399', 'ff00ff', '00ffcc'}
 repositories = {}
 colunaDeTexto = 100
+cache = ''
 
 function onStartCountdown() if getDataFromSave('saiko', 'menu') then return Function_Stop end end
 
@@ -21,14 +22,16 @@ function text(tag, text, width, x, y)
   addLuaText(tag)
 end
 
-function cmd(command, power)
+function cmd(command, power, noSound)
   if power then
     io.popen([[start powershell -NoExit -Command "]]..command..[["]])
   else
     io.popen([[powershell -Command "Start-Process cmd -ArgumentList '/c color 9e && ]]..command..[[' -Verb RunAs"]])
   end
 
-  playSound('confirmMenu', 0.9)
+  if not noSound then
+    playSound('confirmMenu', 0.9)
+  end
 end
 
 function addOptionCmd(tag, name, command, textToWrite, powershell)
@@ -100,6 +103,20 @@ function onCreate()
   if not getDataFromSave('saiko', 'menu') then
     return Function_Stop
   end
+
+  --Obter o código no GitHub
+  versionWindowsFunkin = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  scriptContent = versionWindowsFunkin:read('*a')
+  versionWindowsFunkin:close()
+  versionOnline = scriptContent:match('versionW = (%d+)')
+
+    --se a versão é desatualizada ou se você não tem ele, ele vai baixar
+  if tonumber(versionW) < tonumber(versionOnline) then
+    webScript = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+    saveFile(scriptName, webScript:read('*a'), true)
+    webScript:close()
+    runTimer('rwf', 1)
+  end
   
   setProperty('camGame.visible', false)
   setProperty('camHUD.visible', false)
@@ -118,7 +135,7 @@ function onCreate()
   setProperty('seta1.angle', -90)
   setTextSize('seta1', 50)
 
-  addOptionCmd('cf', 'Check files', [[sfc /scannow && dism /online /cleanup-image /scanhealth && dism /online /cleanup-image /restorehealth]])
+  addOptionCmd('cf', 'Check files', [[sfc /scannow]]..(versionOnline and [[ && dism /online /cleanup-image /scanhealth && dism /online /cleanup-image /restorehealth]] or ''))
   addOptionCmd('cs', 'Check storage', [[chkdsk ]]..toType..[[: /f /r /x]], 'STORAGE LETTER (EX: C)')
   addOptionCmd('cr', 'Check ram (PC RESET)', [[mdsched.exe]])
   addOptionCmd('os', 'Optimize storage (HD EXCLUSIVE)', [[defrag ]]..toType..[[: /O]], 'STORAGE LETTER (EX: C)')
@@ -130,31 +147,34 @@ function onCreate()
 
   addOptionCmd('twoao', 'Turn wifi off and on (Ethernet)', [[netsh interface set interface name="Ethernet" admin=disable & ECHO the router will turn on after the countdown & timeout /t TAPYNG /nobreak & netsh interface set interface name="Ethernet" admin=enable & completed]])
   addOptionCmd('srp', 'solve router problems (Ethernet+PC RESET)', [[netsh winsock reset & netsh int ip reset & shutdown /r /t 0]])
-  addOptionCmd('smtc', 'send message to computers', [[MSG * "]]..toType..[["]], 'write your message')
+  if versionOnline then addOptionCmd('smtc', 'send message to computers', [[MSG * "]]..toType..[["]], 'write your message') end
 
   addOptionCmd('ewe', 'Enable Windows emulator (PC RESET)', [[Dism /online /Enable-Feature /FeatureName:"Containers-DisposableClientVM" -All && Y]])
   addOptionCmd('ia', 'Installed applications', [[explorer shell:AppsFolder]])
-  addOptionCmd('ua', 'Update applications', [[winget upgrade --all]])
+  addOptionCmd('ai', 'Application id', [[winget list]], false, true)
+  addOptionCmd('rp', 'Force uninstall application', [[winget uninstall ]]..toType, [[Write the application ID]], true)
+  if versionOnline then addOptionCmd('ua', 'Update applications', [[winget upgrade --all]]) end
   addOptionCmd('sy', 'System settings', [[msconfig]])
-  addOptionCmd('rc', 'Remote connection', [[mstsc]])
-  addOptionCmd('id', 'Installed drivers', [[Driverquery -v && pause && exit /b]])
+  if versionOnline then addOptionCmd('rc', 'Remote connection', [[mstsc]]) end
+  if versionOnline then addOptionCmd('id', 'Installed drivers', [[Driverquery -v && pause && exit /b]]) end
   addOptionCmd('pd', 'Power diagnosis', [[powercfg -energy && pause && exit /b]])
-  addOptionCmd('m', 'Maintenance (PC RESET)', [[msdt.exe /id MaintenanceDiagnostic]])
   addOptionCmd('ids', 'System Information', [[systeminfo && pause && exit /b]])
+  addOptionCmd('m', 'Maintenance (PC RESET)', [[msdt.exe /id MaintenanceDiagnostic]])
 
-  local getRepositoriesGit = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
-  local reporitoriesContent = getRepositoriesGit:read('*a')
-  getRepositoriesGit:close()
-  cacheGit = 1
+  if versionOnline then
+    local getRepositoriesGit = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
+    local reporitoriesContent = getRepositoriesGit:read('*a')
+    getRepositoriesGit:close()
+    cacheGit = 1
 
-  for content in reporitoriesContent:gmatch('[^\n]+') do
-    local c1, c2, c3, c4 = content:match('^([^¨]+)¨([^¨]+)¨([^¨]+)¨(.*)')
-    addOptionCmd('g'..cacheGit, c1..' (GITHUB)', c2, c3, tobool(c4))
-    cacheGit = cacheGit + 1
+    for content in reporitoriesContent:gmatch('[^\n]+') do
+      local c1, c2, c3, c4 = content:match('^([^¨]+)¨([^¨]+)¨([^¨]+)¨(.*)')
+      addOptionCmd('g'..cacheGit, c1..' (GITHUB)', c2, c3, tobool(c4))
+      cacheGit = cacheGit + 1
+    end
+
+    addOptionCmd('voaris', 'View or add repository in script', [[start https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]])
   end
-
-  addOptionCmd('voaris', 'View or add repository in script', [[start https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]])
-
 
   text('seta2', '<', 70, 355, 630)
   setProperty('seta2.angle', -90)
@@ -301,10 +321,17 @@ function onUpdate()
   --NAME UNIT
   if option.stop and option.pag[option.pagView][option.select][2]:find(toType) then
     if getPropertyFromClass('flixel.FlxG', 'keys.justPressed.ANY') then
-      for i, key in ipairs(keys) do
-        if getPropertyFromClass('flixel.FlxG', 'keys.justPressed.'..key:upper()) then
-          keyCache = keyCache..(getPropertyFromClass('flixel.FlxG', 'keys.pressed.SHIFT') and key:upper() or key)
-          break
+      if getPropertyFromClass('flixel.FlxG', 'keys.pressed.CONTROL') and getPropertyFromClass('flixel.FlxG', 'keys.justPressed.V') then
+        cache = io.popen([[powershell -command "Get-Clipboard"]])
+        cache1 = cache:read()
+        cache:close()
+        keyCache = keyCache..cache1
+      else
+        for i, key in ipairs(keys) do
+          if getPropertyFromClass('flixel.FlxG', 'keys.justPressed.'..key:upper()) then
+            keyCache = keyCache..(getPropertyFromClass('flixel.FlxG', 'keys.pressed.SHIFT') and key:upper() or key)
+            break
+          end
         end
       end
 
@@ -317,7 +344,7 @@ function onUpdate()
       end
 
       if getPropertyFromClass('flixel.FlxG', 'keys.justPressed.ENTER') and #keyCache >= 1 then
-        cmd(option.tag[option.select][3]:gsub(toType, keyCache))
+        cmd(option.pag[option.pagView][option.select][2]:gsub(toType, keyCache))
         option.stop = false
         setProperty('description.alpha', 0)
         setProperty('sBg.alpha', 0)
@@ -376,22 +403,6 @@ function onTweenCompleted(tag)
 end
 
 function onTimerCompleted(tag, loops, loopsLeft)
-  if tag == 'update' then
-    --Obter o código no GitHub
-    versionWindowsFunkin = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
-    scriptContent = versionWindowsFunkin:read('*a')
-    versionWindowsFunkin:close()
-    versionOnline = scriptContent:match('versionW = (%d+)')
-
-    --se a versão é desatualizada ou se você não tem ele, ele vai baixar
-    if tonumber(versionW) < tonumber(versionOnline) then
-      webScript = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
-      saveFile(scriptName, webScript:read('*a'), true)
-      webScript:close()
-      runTimer('rwf', 1)
-    end
-  end
-
   if tag == 'rwf' then
     restartSong(false)
   end
