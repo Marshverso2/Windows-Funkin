@@ -1,4 +1,4 @@
-versionW = 26
+versionW = 1
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
 keyCache = ''
@@ -107,7 +107,21 @@ function onCreate()
 
 
   --UPDATE
-  github = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  versionWindowsFunkin = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  scriptContent = versionWindowsFunkin:read('*a')
+  versionWindowsFunkin:close()
+  versionOnline = scriptContent:match('versionW = (%d+)')
+
+    --se a versão é desatualizada ou se você não tem ele, ele vai baixar
+  if tonumber(versionW) < tonumber(versionOnline) then
+    webScript = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+    saveFile(scriptName, webScript:read('*a'), true)
+    webScript:close()
+   runTimer('rwf', 1)
+  end
+
+  --refazer esse código depois
+  --[[github = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
   scriptContent = github:read('*a')
   online = (scriptContent and true or false)
 
@@ -122,7 +136,7 @@ function onCreate()
 
   versionW = versionW..' ('..(online and 'ONLINE' or 'OFFLINE')..')'
 
-  github:close()
+  github:close()]]
 
 
 
@@ -444,7 +458,6 @@ function onTimerCompleted(tag, loops, loopsLeft)
     restartSong(false)
   end
 end
-
 
 
 
