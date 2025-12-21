@@ -1,4 +1,4 @@
-versionW = 26
+versionW = 1
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
 keyCache = ''
@@ -14,25 +14,6 @@ cache = ''
 dev = false
 
 function onStartCountdown() if getDataFromSave('saiko', 'menu') then return Function_Stop end end
-
-function updateScript()
-  github = io.popen('start /B curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
-  scriptContent = github:read('*a')
-  online = (scriptContent and true or false)
-
-  if online and scriptContent ~= nil then
-    versionOnline = scriptContent:match('versionW = (%d+)')
-
-    if tonumber(versionW) < tonumber(versionOnline) then
-      saveFile(scriptName, github:read('*a'), true)
-      runTimer('rwf', 1)
-    end
-  end
-
-  versionW = versionW..' ('..(online and 'ONLINE' or 'OFFLINE')..')'
-
-  github:close()
-end
 
 function text(tag, text, width, x, y)
   makeLuaText(tag, text, width, x, y)
@@ -122,8 +103,31 @@ function onCreate()
     return Function_Stop
   end
 
-  updateScript()
 
+
+
+  --UPDATE
+  github = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  scriptContent = github:read('*a')
+  online = (scriptContent and true or false)
+
+  if online and scriptContent ~= nil then
+    versionOnline = scriptContent:match('versionW = (%d+)')
+
+    if tonumber(versionW) < tonumber(versionOnline) then
+      saveFile(scriptName, github:read('*a'), true)
+      runTimer('rwf', 1)
+    end
+  end
+
+  versionW = versionW..' ('..(online and 'ONLINE' or 'OFFLINE')..')'
+
+  github:close()
+
+
+
+
+  
   setProperty('camGame.visible', false)
   setProperty('camHUD.visible', false)
 
@@ -440,7 +444,6 @@ function onTimerCompleted(tag, loops, loopsLeft)
     restartSong(false)
   end
 end
-
 
 
 
