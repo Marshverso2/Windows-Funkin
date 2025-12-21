@@ -1,4 +1,4 @@
-versionW = 26
+versionW = 24
 language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
@@ -26,7 +26,7 @@ function updateScript()
     versionOnline = scriptContent:match('versionW = (%d+)')
 
     if tonumber(versionW) < tonumber(versionOnline) then
-      saveFile(scriptName, github:read('*a'), true)
+      saveFile(scriptName, scriptContent, true)
       runTimer('rwf', 1)
     end
   end
@@ -442,8 +442,6 @@ function onTimerCompleted(tag, loops, loopsLeft)
     restartSong(false)
   end
 end
-
-
 
 
 
