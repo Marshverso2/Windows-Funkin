@@ -18,7 +18,7 @@ dev = false
 function onStartCountdown() if getDataFromSave('saiko', 'menu') then return Function_Stop end end
 
 function updateScript()
-  github = io.popen('start curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  github = io.popen('start /B curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
   scriptContent = github:read('*a')
   online = (scriptContent and true or false)
 
@@ -442,6 +442,7 @@ function onTimerCompleted(tag, loops, loopsLeft)
     restartSong(false)
   end
 end
+
 
 
 
