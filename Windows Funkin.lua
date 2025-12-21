@@ -1,4 +1,4 @@
-versionW = 25
+versionW = 26
 language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
@@ -13,8 +13,28 @@ blockColors = {'00ff99', '6666ff', 'ff3399', 'ff00ff', '00ffcc'}
 repositories = {}
 colunaDeTexto = 100
 cache = ''
+dev = false
 
 function onStartCountdown() if getDataFromSave('saiko', 'menu') then return Function_Stop end end
+
+function updateScript()
+  github = io.popen('start /B curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  scriptContent = github:read('*a')
+  online = (scriptContent and true or false)
+
+  if online then
+    versionOnline = scriptContent:match('versionW = (%d+)')
+
+    if tonumber(versionW) < tonumber(versionOnline) then
+      saveFile(scriptName, github:read('*a'), true)
+      runTimer('rwf', 1)
+    end
+  end
+
+  versionW = versionW..' ('..(online and 'ONLINE' or 'OFFLINE')..')'
+
+  github:close()
+end
 
 function text(tag, text, width, x, y)
   makeLuaText(tag, text, width, x, y)
@@ -40,7 +60,7 @@ function addOptionCmd(tag, name, command, textToWrite, powershell)
   end
 
   table.insert(option.pag[#option.pag], {tag, command, (textToWrite or 'Type'), (powershell or false)}) --ENTER THE LETTER OF THE STORAGE DRIVE
-  text(tag..'Option', name, 750, 10, colunaDeTexto)
+  text(tag..'Option', name..(command:find('shutdown /r') and ' (PC RESET)' or ''), 750, 10, colunaDeTexto)
   setObjectOrder(tag..'Option', 30)
   setTextSize(tag..'Option', 30)
   setProperty(tag..'Option.alpha', 0.8)
@@ -73,7 +93,7 @@ function changePage(page)
   end
 end
 
-function selectionOp()
+function select()
   for i=1,#option.pag[option.pagView] do
     if option.select == i and not (getProperty(option.pag[option.pagView][i][1]..'Option.color') == -256) then
       setProperty(option.pag[option.pagView][i][1]..'Option.color', getColorFromHex('ffff00'))
@@ -104,24 +124,12 @@ function onCreate()
     return Function_Stop
   end
 
-  --Obter o código no GitHub
-  versionWindowsFunkin = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
-  scriptContent = versionWindowsFunkin:read('*a')
-  versionWindowsFunkin:close()
-  versionOnline = scriptContent:match('versionW = (%d+)')
+  updateScript()
 
-    --se a versão é desatualizada ou se você não tem ele, ele vai baixar
-  if tonumber(versionW) < tonumber(versionOnline) then
-    webScript = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
-    saveFile(scriptName, webScript:read('*a'), true)
-    webScript:close()
-    runTimer('rwf', 1)
-  end
-  
   setProperty('camGame.visible', false)
   setProperty('camHUD.visible', false)
 
-  text('versionW', 'v'..versionW, 100, 10, 2)
+  text('versionW', 'v'..versionW, screenWidth, 10, 2)
   setTextSize('versionW', 40)
   screenCenter('versionW', 'x')
 
@@ -135,34 +143,44 @@ function onCreate()
   setProperty('seta1.angle', -90)
   setTextSize('seta1', 50)
 
-  addOptionCmd('cf', 'Check files', [[sfc /scannow]]..(versionOnline and [[ && dism /online /cleanup-image /scanhealth && dism /online /cleanup-image /restorehealth]] or ''))
+
+
+
+
+  addOptionCmd('cf', 'Check files', [[sfc /scannow]]..(online and [[ && dism /online /cleanup-image /scanhealth && dism /online /cleanup-image /restorehealth]] or ''))
   addOptionCmd('cs', 'Check storage', [[chkdsk ]]..toType..[[: /f /r /x]], 'STORAGE LETTER (EX: C)')
-  addOptionCmd('cr', 'Check ram (PC RESET)', [[mdsched.exe]])
+  addOptionCmd('cr', 'Check ram', [[mdsched.exe]])
   addOptionCmd('os', 'Optimize storage (HD EXCLUSIVE)', [[defrag ]]..toType..[[: /O]], 'STORAGE LETTER (EX: C)')
-  addOptionCmd('cc', 'Clear cache', [[rmdir /s /q %TEMP% && rmdir /s /q C:\Windows\Temp && rmdir /s /q C:\Windows\Prefetch]])
-  addOptionCmd('csc', 'Clear storage cache', [[cleanmgr]])
+  addOptionCmd('cc', 'Clear cache', [[rmdir /s /q %TEMP% && rmdir /s /q C:\Windows\Temp && rmdir /s /q C:\Windows\Prefetch && cleanmgr]])
   addOptionCmd('ps', 'Performance settings', [[SystemPropertiesPerformance]])
+  addOptionCmd('dap', 'Disable automatic prints', [[DISM /Online /Disable-Feature /FeatureName:Recall]])
   addOptionCmd('av', 'Anti-virus', [[mrt]])
   addOptionCmd('cd', 'Clear dns', [[ipconfig /flushdns]])
 
-  addOptionCmd('twoao', 'Turn wifi off and on (Ethernet)', [[netsh interface set interface name="Ethernet" admin=disable & ECHO the router will turn on after the countdown & timeout /t TAPYNG /nobreak & netsh interface set interface name="Ethernet" admin=enable & completed]])
-  addOptionCmd('srp', 'solve router problems (Ethernet+PC RESET)', [[netsh winsock reset & netsh int ip reset & shutdown /r /t 0]])
-  if versionOnline then addOptionCmd('smtc', 'send message to computers', [[MSG * "]]..toType..[["]], 'write your message') end
+  addOptionCmd('twoao', 'Turn wifi off and on (Ethernet)', [[netsh interface set interface name="Ethernet" admin=disable & ECHO the router will turn on after the countdown & timeout /t 10 /nobreak & netsh interface set interface name="Ethernet" admin=enable & echo completed]])
+  addOptionCmd('srp', 'Solve router problems (Ethernet)', [[netsh winsock reset & netsh int ip reset & shutdown /r /t 0]])
+  if online then addOptionCmd('smtc', 'Send message to computers', [[MSG * "]]..toType..[["]], 'write your message') end
 
   addOptionCmd('ewe', 'Enable Windows emulator (PC RESET)', [[Dism /online /Enable-Feature /FeatureName:"Containers-DisposableClientVM" -All && Y]])
   addOptionCmd('ia', 'Installed applications', [[explorer shell:AppsFolder]])
-  addOptionCmd('ai', 'Application id', [[winget list]], false, true)
-  addOptionCmd('rp', 'Force uninstall application', [[winget uninstall ]]..toType, [[Write the application ID]], true)
-  if versionOnline then addOptionCmd('ua', 'Update applications', [[winget upgrade --all]]) end
+  
+  if online then 
+    addOptionCmd('ai', 'Application id', [[winget list]], false, true) 
+    addOptionCmd('rp', 'Force uninstall application', [[winget uninstall ]]..toType, [[Write the application ID]], true)
+  end
+
+  if online then addOptionCmd('ua', 'Update applications', [[winget upgrade --all]]) end
   addOptionCmd('sy', 'System settings', [[msconfig]])
-  if versionOnline then addOptionCmd('rc', 'Remote connection', [[mstsc]]) end
-  if versionOnline then addOptionCmd('id', 'Installed drivers', [[Driverquery -v && pause && exit /b]]) end
+  if online then addOptionCmd('rc', 'Remote connection', [[mstsc]]) end
+  if online then addOptionCmd('id', 'Installed drivers', [[Driverquery -v && pause && exit /b]]) end
   addOptionCmd('pd', 'Power diagnosis', [[powercfg -energy && pause && exit /b]])
-  addOptionCmd('ids', 'System Information', [[systeminfo && pause && exit /b]])
+  addOptionCmd('eb', 'Enter bios', 'shutdown /r /fw /t 0')
+  addOptionCmd('ids', 'System information', [[systeminfo && pause && exit /b]])
+  addOptionCmd('fwub', 'Fix windows update bug', [[net stop wuauserv && net stop bits && net stop cryptsvc && net stop msiserver && ren C:\Windows\SoftwareDistribution SoftwareDistribution.old && ren C:\Windows\System32\catroot2 Catroot2.old && net start wuauserv && net start bits && net start cryptsvc && net start msiserver (reset pc) &&]])
   addOptionCmd('m', 'Maintenance (PC RESET)', [[msdt.exe /id MaintenanceDiagnostic]])
 
-  if versionOnline then
-    local getRepositoriesGit = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
+  if online then
+    local getRepositoriesGit = io.popen('start /B curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
     local reporitoriesContent = getRepositoriesGit:read('*a')
     getRepositoriesGit:close()
     cacheGit = 1
@@ -173,8 +191,12 @@ function onCreate()
       cacheGit = cacheGit + 1
     end
 
-    addOptionCmd('voaris', 'View or add repository in script', [[start https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]])
+    addOptionCmd('voaris', 'View or add repository in script', [[start /B https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]])
   end
+
+
+
+
 
   text('seta2', '<', 70, 355, 630)
   setProperty('seta2.angle', -90)
@@ -206,10 +228,13 @@ function onCreate()
     playMusic('breakfast', 0.5, true)
   end
 
-  makeLuaSprite('bg')
-  makeGraphic('bg', screenWidth, screenHeight, '003380')
-  setObjectCamera('bg', 'camOther')
-  addLuaSprite('bg', false)
+  --BG
+  if not dev then
+    makeLuaSprite('bg')
+    makeGraphic('bg', screenWidth, screenHeight, '003380')
+    setObjectCamera('bg', 'camOther')
+    addLuaSprite('bg', false)
+  end
 
   for i=1,80 do
     makeLuaSprite('block'..i, '', math.random(0, screenWidth-50), math.random(0, screenHeight-50))
@@ -228,15 +253,17 @@ function onCreate()
     doTweenAlpha('block'..i..'Al', 'block'..i, 0, getRandomFloat(2,15), 'backin')
   end
 
-  makeLuaSprite('bg1')
-  makeGraphic('bg1', screenWidth, 45, '4d4dff')
-  setObjectCamera('bg1', 'camOther')
-  addLuaSprite('bg1', false)
+  if not dev then
+    makeLuaSprite('bg1')
+    makeGraphic('bg1', screenWidth, 45, '4d4dff')
+    setObjectCamera('bg1', 'camOther')
+    addLuaSprite('bg1', false)
 
-  makeLuaSprite('bg2', nil, 0, screenHeight - 45)
-  makeGraphic('bg2', screenWidth, 45, '4d4dff')
-  setObjectCamera('bg2', 'camOther')
-  addLuaSprite('bg2', false)
+    makeLuaSprite('bg2', nil, 0, screenHeight - 45)
+    makeGraphic('bg2', screenWidth, 45, '4d4dff')
+    setObjectCamera('bg2', 'camOther')
+    addLuaSprite('bg2', false)
+  end
 
   makeAnimatedLuaSprite('gfWindows', 'characters/GF_assets', 840, 450)
   addAnimationByPrefix('gfWindows', 'danceLeft', 'GF Dancing Beat0', 24, true)
@@ -269,24 +296,23 @@ function onCreatePost()
   end
   --
 
-  selectionOp()
+  select()
   changePage(0)
 
   setPropertyFromClass('flixel.FlxG', 'autoPause', false)
 end
 
 function onUpdate()
+  --entrar no 
   if (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.SIX') or (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.ESCAPE') and getDataFromSave('saiko', 'menu'))) and not option.stop then
-    if version >= '0.7.0' then
-      setPropertyFromClass('flixel.FlxG', 'autoPause', getPropertyFromClass('backend.ClientPrefs', 'data.autoPause'))
-    end
-
+    setPropertyFromClass('flixel.FlxG', 'autoPause', getPropertyFromClass((version >= '0.7.0' and 'backend.' and '')..'ClientPrefs', 'data.autoPause'))
     setDataFromSave('saiko', 'menu', not getDataFromSave('saiko', 'menu'))
     restartSong(false)
     close(false)
   end
 
   if not option.stop and getDataFromSave('saiko', 'menu') then
+
     if not option.stop and getPropertyFromClass('flixel.FlxG', 'keys.justPressed.R') then
       restartSong(true)
     end
@@ -301,7 +327,7 @@ function onUpdate()
       end
 
       playSound('scrollMenu', 0.7)
-      selectionOp()
+      select()
     end
     ---------
 
@@ -316,6 +342,7 @@ function onUpdate()
         cmd(option.pag[option.pagView][option.select][2], option.pag[option.pagView][option.select][4])
       end
     end
+
   end
 
   --NAME UNIT
@@ -365,6 +392,10 @@ function onUpdate()
   end
 end
 
+
+
+
+
 function onTweenCompleted(tag)
   if tag == 'titleX' then
     if getProperty('title.x') == screenWidth/1.9 then
@@ -401,6 +432,10 @@ function onTweenCompleted(tag)
     doTweenX('creditsX', 'credits', -getProperty('credits.width'), 60, 'linear')
   end  
 end
+
+
+
+
 
 function onTimerCompleted(tag, loops, loopsLeft)
   if tag == 'rwf' then
