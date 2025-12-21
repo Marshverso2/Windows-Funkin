@@ -1,5 +1,4 @@
 versionW = 26
-language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
 keyCache = ''
@@ -10,7 +9,6 @@ option = {
   stop = false
 }
 blockColors = {'00ff99', '6666ff', 'ff3399', 'ff00ff', '00ffcc'}
-repositories = {}
 colunaDeTexto = 100
 cache = ''
 dev = false
@@ -442,6 +440,7 @@ function onTimerCompleted(tag, loops, loopsLeft)
     restartSong(false)
   end
 end
+
 
 
 
