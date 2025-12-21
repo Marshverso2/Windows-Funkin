@@ -18,15 +18,15 @@ dev = false
 function onStartCountdown() if getDataFromSave('saiko', 'menu') then return Function_Stop end end
 
 function updateScript()
-  github = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  github = io.popen('start /B curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
   scriptContent = github:read('*a')
   online = (scriptContent and true or false)
 
-  if online then
+  if online and scriptContent ~= nil then
     versionOnline = scriptContent:match('versionW = (%d+)')
 
     if tonumber(versionW) < tonumber(versionOnline) then
-      saveFile(scriptName, scriptContent, true)
+      saveFile(scriptName, github:read('*a'), true)
       runTimer('rwf', 1)
     end
   end
