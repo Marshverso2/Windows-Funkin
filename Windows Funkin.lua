@@ -1,4 +1,4 @@
-versionW = 26
+versionW = 25
 language = os.setlocale(nil, 'collate'):lower()
 keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
 toType = 'NAMEUNIT'
@@ -18,7 +18,7 @@ dev = false
 function onStartCountdown() if getDataFromSave('saiko', 'menu') then return Function_Stop end end
 
 function updateScript()
-  github = io.popen('start /B curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  github = io.popen('start curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
   scriptContent = github:read('*a')
   online = (scriptContent and true or false)
 
