@@ -1,5 +1,5 @@
-versionW = 26
-keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
+versionW = 27.0
+credits = {'Creator: Marshverso (YT)', 'Beta Testers: FandeFNF (YT) and Erislwlol(Twitter)'}
 toType = 'NAMEUNIT'
 keyCache = ''
 option = {
@@ -8,15 +8,24 @@ option = {
   pagView = 1,
   stop = false
 }
-blockColors = {'00ff99', '6666ff', 'ff3399', 'ff00ff', '00ffcc'}
-colunaDeTexto = 100
+blockMax = 100
+blockColors = {'00ff99', '6666ff', 'ff3399', 'ff00ff', 'FFFF00'}
+colunaDeTexto = 350
 cache = ''
+keys = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'}
+system = {
+  ['linux'] = 'lnx',
+  ['unknown'] = 'lnx',
+  ['mac'] = 'mac',
+  ['windows'] = 'win'
+}
 dev = false
+luaDebugMode = true
 
-function onStartCountdown() if getDataFromSave('saiko', 'menu') then return Function_Stop end end
+function onStartCountdown() if getDataFromSave('assistent funkin girl', 'menu') then return Function_Stop end end
 
 function updateScript()
-  github = io.popen('curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
+  github = io.popen(((buildTarget == 'linux' or buildTarget == 'mac') and 'curl -fsSL' or 'curl -s')..' https://raw.githubusercontent.com/Marshverso2/Windows-Funkin/refs/heads/main/Windows%20Funkin.lua')
   scriptContent = github:read('*a')
   online = (scriptContent and true or false)
 
@@ -34,6 +43,196 @@ function updateScript()
   github:close()
 end
 
+function options()
+  addOptionCmd('cf', 'Check files', {
+    [[|lnx| sudo fsck -Af -M]],
+    [[|mac| sudo diskutil verifyVolume /]],
+    [[|win| sfc /scannow]]..(online and [[ && dism /online /cleanup-image /scanhealth && dism /online /cleanup-image /restorehealth]] or '')
+  })
+
+
+  addOptionCmd('cs', 'Check storage', {
+    [[|lnx| sudo fsck ]]..toType,
+    [[|mac| sudo diskutil verifyVolume ]]..toType,
+    [[|win| chkdsk ]]..toType..[[: /f /r /x]]
+  }, 'STORAGE '..(
+    buildTarget == 'linux' and 'STORAGE (EX: /dev/sda1)' or
+    buildTarget == 'mac'   and 'STORAGE (EX: disk0s1)' or
+    'STORAGE LETTER (EX: C)'
+  ))
+
+
+  addOptionCmd('cr', 'Check ram', {
+    [[|lnx| sudo memtester 1024M 1]],
+    [[|mac| echo "Apple Diagnostics: desligue o Mac e ligue segurando D"]],
+    [[|win| mdsched.exe]]
+  })
+
+
+  addOptionCmd('os', 'Optimize storage (HD EXCLUSIVE)', {
+    [[|lnx| sudo e4fsck -f ]],
+    [[|mac| sudo diskutil repairVolume ]]..toType,
+    [[|win| defrag ]]..toType..[[: /O]]
+  }, 'STORAGE '..(
+    buildTarget == 'linux' and '(EX: /dev/sda1)' or
+    buildTarget == 'mac'   and '(EX: disk0s1)' or
+    'LETTER (EX: C)'
+  ))
+
+
+  addOptionCmd('cc', 'Clear cache', {
+    [[|lnx| sudo apt clean && sudo apt autoremove -y && sync; echo 3 | sudo tee /proc/sys/vm/drop_caches]],
+    [[|mac| sudo rm -rf ~/Library/Caches/* /Library/Caches/* && sudo purge]],
+    [[|win| rmdir /s /q %TEMP% && rmdir /s /q C:\Windows\Temp && rmdir /s /q C:\Windows\Prefetch && cleanmgr]]
+  })
+
+
+  addOptionCmd('ps', 'Performance settings', {
+    [[|lnx| gnome-control-center]],
+    [[|mac| open /System/Library/PreferencePanes/EnergySaver.prefPane]],
+    [[|win| SystemPropertiesPerformance]]
+  })
+
+
+  addOptionCmd('av', 'Anti-virus', {
+    [[|lnx| clamscan -r /]],
+    [[|mac| clamscan -r /]],
+    [[|win| mrt]]
+  })
+
+
+  addOptionCmd('cd', 'Clear dns', {
+    [[|lnx| sudo systemd-resolve --flush-caches]],
+    [[|mac| sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder]],
+    [[|win| ipconfig /flushdns]]
+  })
+
+
+  addOptionCmd('twoao', 'Turn wifi off and on (Ethernet)', {
+    [[|lnx| sudo nmcli networking off && sleep 10 && sudo nmcli networking on]],
+    [[|mac| networksetup -setnetworkserviceenabled Ethernet off && sleep 10 && networksetup -setnetworkserviceenabled Ethernet on]],
+    [[|win| netsh interface set interface name="Ethernet" admin=disable & timeout /t 10 & netsh interface set interface name="Ethernet" admin=enable]]
+  })
+
+
+  addOptionCmd('srp', 'Solve router problems (Ethernet)', {
+    [[|lnx| sudo systemctl restart NetworkManager]],
+    [[|mac| sudo ifconfig en0 down && sudo ifconfig en0 up]],
+    [[|win| netsh winsock reset & netsh int ip reset & shutdown /r /t 0]]
+  })
+
+
+  if online then
+    addOptionCmd('smtc', 'Send message to computers', {
+      [[|lnx| wall "]]..toType..[["]],
+      [[|mac| osascript -e 'display alert "Message" message "]]..toType..[["']],
+      [[|win| MSG * "]]..toType..[["]]
+    }, 'write your message')
+  end
+
+
+  addOptionCmd('ia', 'Installed applications', {
+    [[|lnx| dpkg -l || flatpak list || snap list]],
+    [[|mac| ls /Applications]],
+    [[|win| explorer shell:AppsFolder]]
+  })
+
+
+  if online then
+    addOptionCmd('ai', 'Application name/id', {
+      [[|lnx| apt list --installed]],
+      [[|mac| brew list]],
+      [[|win| winget list]]
+    }, false, true)
+
+    addOptionCmd('rp', 'Force uninstall application', {
+      [[|lnx| sudo apt purge ]]..toType,
+      [[|mac| brew uninstall ]]..toType,
+      [[|win| winget uninstall ]]..toType
+    }, [[Write the application ]]..(
+      buildTarget == 'linux' and 'name' or
+      buildTarget == 'mac'   and 'name' or
+      'ID'
+    ), true)
+
+    addOptionCmd('ua', 'Update applications', {
+      [[|lnx| sudo apt update && sudo apt upgrade -y]],
+      [[|mac| brew update && brew upgrade]],
+      [[|win| winget upgrade --all]]
+    })
+  end
+
+
+  addOptionCmd('sy', 'System settings', {
+    [[|lnx| gnome-control-center]],
+    [[|mac| open /System/Library/PreferencePanes]],
+    [[|win| msconfig]]
+  })
+
+
+  if online then
+    addOptionCmd('rc', 'Remote connection', {
+      [[|lnx| remmina]],
+      [[|mac| open vnc://]],
+      [[|win| mstsc]]
+    })
+
+    addOptionCmd('id', 'Installed drivers', {
+      [[|lnx| lspci -k && lsusb]],
+      [[|mac| system_profiler SPHardwareDataType SPUSBDataType]],
+      [[|win| Driverquery -v && pause && exit /b]]
+    })
+  end
+
+
+  addOptionCmd('pd', 'Power diagnosis', {
+    [[|lnx| sudo powertop]],
+    [[|mac| pmset -g batt]],
+    [[|win| powercfg -energy && pause && exit /b]]
+  })
+
+
+  addOptionCmd('eb', 'Enter bios', {
+    [[|lnx| sudo systemctl reboot --firmware-setup]],
+    [[|mac| sudo nvram -d boot-args && sudo shutdown -r now]],
+    [[|win| shutdown /r /fw /t 0]]
+  })
+
+
+  addOptionCmd('ids', 'System information', {
+    [[|lnx| neofetch || inxi -Fxz]],
+    [[|mac| system_profiler SPSoftwareDataType SPHardwareDataType]],
+    [[|win| systeminfo && pause && exit /b]]
+  })
+
+
+  addOptionCmd('m', 'Maintenance (PC RESET)', {
+    [[|lnx| sudo apt autoremove -y && sudo apt clean]],
+    [[|mac| softwareupdate -i -a]],
+    [[|win| msdt.exe /id MaintenanceDiagnostic]]
+  })
+
+
+  if online and buildTarget:find('windows') then
+    local getRepositoriesGit = io.popen('start /B curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
+    local reporitoriesContent = getRepositoriesGit:read('*a')
+    getRepositoriesGit:close()
+    cacheGit = 1
+
+    for content in reporitoriesContent:gmatch('[^\n]+') do
+      local c1, c2, c3, c4 = content:match('^([^¨]+)¨([^¨]+)¨([^¨]+)¨(.*)')
+      addOptionCmd('g'..cacheGit, c1..' (GITHUB)', c2, c3, tobool(c4))
+      cacheGit = cacheGit + 1
+    end
+
+    addOptionCmd('voaris', 'View or add repository in script', {
+      [[|win| start /B https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]],
+      [[|lnx| xdg-open https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]],
+      [[|mac| open https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]]
+    })
+  end
+end
+
 function text(tag, text, width, x, y)
   makeLuaText(tag, text, width, x, y)
   setObjectCamera(tag, 'camOther')
@@ -41,10 +240,16 @@ function text(tag, text, width, x, y)
 end
 
 function cmd(command, power, noSound)
-  if power then
-    io.popen([[start powershell -NoExit -Command "]]..command..[["]])
-  else
-    io.popen([[powershell -Command "Start-Process cmd -ArgumentList '/c color 9e && ]]..command..[[' -Verb RunAs"]])
+  if buildTarget:find('windows') then
+    if power then
+      io.popen([[start powershell -NoExit -Command "]]..command..[["]])
+    else
+      io.popen([[powershell -Command "Start-Process cmd -ArgumentList '/c color 9e && ]]..command..[[' -Verb RunAs"]])
+    end
+  elseif buildTarget == 'linux' or buildTarget == 'unknown' then
+    io.popen(command)
+  elseif buildTarget == 'mac' then
+    io.popen([[osascript -e 'do shell script "]]..command..[[" with administrator privileges']])
   end
 
   if not noSound then
@@ -53,19 +258,40 @@ function cmd(command, power, noSound)
 end
 
 function addOptionCmd(tag, name, command, textToWrite, powershell)
-  if #option.pag == 0 or #option.pag[#option.pag] >= 11 then
+  if #option.pag == 0 or #option.pag[#option.pag] >= 6 then
     table.insert(option.pag, {})
   end
 
-  table.insert(option.pag[#option.pag], {tag, command, (textToWrite or 'Type'), (powershell or false)}) --ENTER THE LETTER OF THE STORAGE DRIVE
-  text(tag..'Option', name..(command:find('shutdown /r') and ' (PC RESET)' or ''), 750, 10, colunaDeTexto)
+  if type(command) == 'table' then
+    for i, c in ipairs(command) do
+
+      if c:find('|'..system[buildTarget]..'|') then
+        command = c:gsub('|'..system[buildTarget]..'|%s*', '')
+        break
+      end
+
+    end
+  else
+    if command:find('|'..system[buildTarget]..'|') then
+      command = command:gsub('|'..system[buildTarget]..'|%s*', '')
+    end
+  end
+
+  table.insert(option.pag[#option.pag], {
+    tag,
+    command,
+    (textToWrite or 'Type'),
+    (powershell or false)
+  })
+
+  text(tag..'Option', name..((command:find('shutdown /r') or command:find('sudo reboot')) and ' (PC RESET)' or ''), screenWidth, 0, colunaDeTexto)
   setObjectOrder(tag..'Option', 30)
   setTextSize(tag..'Option', 30)
   setProperty(tag..'Option.alpha', 0.8)
   setProperty(tag..'Option.visible', true)
 
   if colunaDeTexto >= 600 then
-    colunaDeTexto = 100
+    colunaDeTexto = 350
   else
     colunaDeTexto = colunaDeTexto + 50
   end
@@ -116,9 +342,9 @@ function tobool(boolean)
 end
 
 function onCreate()
-  initSaveData('saiko', 'saiko')
+  initSaveData('assistent funkin girl', 'assistent funkin girl')
 
-  if not getDataFromSave('saiko', 'menu') then
+  if not getDataFromSave('assistent funkin girl', 'menu') then
     return Function_Stop
   end
 
@@ -127,84 +353,36 @@ function onCreate()
   setProperty('camGame.visible', false)
   setProperty('camHUD.visible', false)
 
-  text('versionW', 'v'..versionW, screenWidth, 10, 2)
+  text('versionW', 'v'..versionW, screenWidth, 0, 2)
   setTextSize('versionW', 40)
   screenCenter('versionW', 'x')
+  setProperty('versionW.alpha', 0)
+  doTweenAlpha('versionWAl', 'versionW', 1, 3, 'backInOut')
 
-  text('title', 'WINDOWS\nFUNKIN', 500, screenWidth, 50)
-  setTextSize('title', 100)
+  text('title', 'ASSISTANT\nFUNKIN\nGIRL', screenWidth, 800, 75)
+  setTextSize('title', 80)
   setTextAlignment('title', 'center')
-  screenCenter('title', 'y')
+
+  for i,c in pairs(credits) do
+    cache = cache..c..(i == #credits and '' or '     ')
+  end
+
+  text('credits', cache, 0, screenWidth+50, screenHeight - 37)
+  setTextSize('credits', 30)
+  setTextAlignment('credits', 'left')
+  doTweenX('creditsX', 'credits', getProperty('credits.width'), 0.1, 'linear')
 
   --options--
-  text('seta1', '>', 70, 355, 50)
+  text('seta1', '>', screenWidth, 0, 310)
   setProperty('seta1.angle', -90)
   setTextSize('seta1', 50)
 
+  options()
 
-
-
-
-  addOptionCmd('cf', 'Check files', [[sfc /scannow]]..(online and [[ && dism /online /cleanup-image /scanhealth && dism /online /cleanup-image /restorehealth]] or ''))
-  addOptionCmd('cs', 'Check storage', [[chkdsk ]]..toType..[[: /f /r /x]], 'STORAGE LETTER (EX: C)')
-  addOptionCmd('cr', 'Check ram', [[mdsched.exe]])
-  addOptionCmd('os', 'Optimize storage (HD EXCLUSIVE)', [[defrag ]]..toType..[[: /O]], 'STORAGE LETTER (EX: C)')
-  addOptionCmd('cc', 'Clear cache', [[rmdir /s /q %TEMP% && rmdir /s /q C:\Windows\Temp && rmdir /s /q C:\Windows\Prefetch && cleanmgr]])
-  addOptionCmd('ps', 'Performance settings', [[SystemPropertiesPerformance]])
-  addOptionCmd('dap', 'Disable automatic prints', [[DISM /Online /Disable-Feature /FeatureName:Recall]])
-  addOptionCmd('av', 'Anti-virus', [[mrt]])
-  addOptionCmd('cd', 'Clear dns', [[ipconfig /flushdns]])
-
-  addOptionCmd('twoao', 'Turn wifi off and on (Ethernet)', [[netsh interface set interface name="Ethernet" admin=disable & ECHO the router will turn on after the countdown & timeout /t 10 /nobreak & netsh interface set interface name="Ethernet" admin=enable & echo completed]])
-  addOptionCmd('srp', 'Solve router problems (Ethernet)', [[netsh winsock reset & netsh int ip reset & shutdown /r /t 0]])
-  if online then addOptionCmd('smtc', 'Send message to computers', [[MSG * "]]..toType..[["]], 'write your message') end
-
-  addOptionCmd('ewe', 'Enable Windows emulator (PC RESET)', [[Dism /online /Enable-Feature /FeatureName:"Containers-DisposableClientVM" -All && Y]])
-  addOptionCmd('ia', 'Installed applications', [[explorer shell:AppsFolder]])
-  
-  if online then 
-    addOptionCmd('ai', 'Application id', [[winget list]], false, true) 
-    addOptionCmd('rp', 'Force uninstall application', [[winget uninstall ]]..toType, [[Write the application ID]], true)
-  end
-
-  if online then addOptionCmd('ua', 'Update applications', [[winget upgrade --all]]) end
-  addOptionCmd('sy', 'System settings', [[msconfig]])
-  if online then addOptionCmd('rc', 'Remote connection', [[mstsc]]) end
-  if online then addOptionCmd('id', 'Installed drivers', [[Driverquery -v && pause && exit /b]]) end
-  addOptionCmd('pd', 'Power diagnosis', [[powercfg -energy && pause && exit /b]])
-  addOptionCmd('eb', 'Enter bios', 'shutdown /r /fw /t 0')
-  addOptionCmd('ids', 'System information', [[systeminfo && pause && exit /b]])
-  addOptionCmd('fwub', 'Fix windows update bug', [[net stop wuauserv && net stop bits && net stop cryptsvc && net stop msiserver && ren C:\Windows\SoftwareDistribution SoftwareDistribution.old && ren C:\Windows\System32\catroot2 Catroot2.old && net start wuauserv && net start bits && net start cryptsvc && net start msiserver (reset pc) &&]])
-  addOptionCmd('m', 'Maintenance (PC RESET)', [[msdt.exe /id MaintenanceDiagnostic]])
-
-  if online then
-    local getRepositoriesGit = io.popen('start /B curl -s https://raw.githubusercontent.com/Marshverso2/Windows-Funkin-Repositories/refs/heads/main/Repositories.txt')
-    local reporitoriesContent = getRepositoriesGit:read('*a')
-    getRepositoriesGit:close()
-    cacheGit = 1
-
-    for content in reporitoriesContent:gmatch('[^\n]+') do
-      local c1, c2, c3, c4 = content:match('^([^¨]+)¨([^¨]+)¨([^¨]+)¨(.*)')
-      addOptionCmd('g'..cacheGit, c1..' (GITHUB)', c2, c3, tobool(c4))
-      cacheGit = cacheGit + 1
-    end
-
-    addOptionCmd('voaris', 'View or add repository in script', [[start /B https://github.com/Marshverso2/Windows-Funkin-Repositories/blob/main/Repositories.txt]])
-  end
-
-
-
-
-
-  text('seta2', '<', 70, 355, 630)
+  text('seta2', '<', screenWidth, 0, 630)
   setProperty('seta2.angle', -90)
   setTextSize('seta2', 50)
   ------------
-
-  text('credits', 'Creator: Marshverso (YT)     Menu design: FacheFNF (DC) and Marshverso (YT)     Beta Testers: FandeFNF (YT) and Erislwlol(Twitter)', 0, screenWidth+50, screenHeight - 37)
-  setTextSize('credits', 30)
-  setTextAlignment('credits', 'left')
-  doTweenX('creditsX', 'credits', -getProperty('credits.width'), 30, 'linear')
 
   makeLuaSprite('sBg')
   makeGraphic('sBg', screenWidth, screenHeight, '000000')
@@ -234,7 +412,11 @@ function onCreate()
     addLuaSprite('bg', false)
   end
 
-  for i=1,80 do
+  if lowQuality then
+    blockMax = blockMax/4
+  end
+
+  for i=1,blockMax do
     makeLuaSprite('block'..i, '', math.random(0, screenWidth-50), math.random(0, screenHeight-50))
     makeGraphic('block'..i, 40, 40, 'ffffff')
     setProperty('block'..i..'.color', getColorFromHex(blockColors[math.random(1,#blockColors)]))
@@ -251,6 +433,21 @@ function onCreate()
     doTweenAlpha('block'..i..'Al', 'block'..i, 0, getRandomFloat(2,15), 'backin')
   end
 
+  if not lowQuality then
+    for i=1,2 do
+      makeAnimatedLuaSprite('gfWindows'..i, 'characters/GF_assets', 1070, -288)
+      addAnimationByPrefix('gfWindows'..i, 'danceLeft', 'GF Dancing Beat0', 24, true)
+      scaleObject('gfWindows'..i, 1.5, 1.5, true)
+      setObjectCamera('gfWindows'..i, 'camOther')
+      setProperty('gfWindows'..i..'.antialiasing', true)
+      addLuaSprite('gfWindows'..i, false)
+
+      if i == 2 then
+        setProperty('gfWindows'..i..'.x', screenWidth - getProperty('gfWindows'..i..'.width') - getProperty('gfWindows1.x'))
+      end
+    end
+  end
+
   if not dev then
     makeLuaSprite('bg1')
     makeGraphic('bg1', screenWidth, 45, '4d4dff')
@@ -263,23 +460,18 @@ function onCreate()
     addLuaSprite('bg2', false)
   end
 
-  makeAnimatedLuaSprite('gfWindows', 'characters/GF_assets', 840, 450)
-  addAnimationByPrefix('gfWindows', 'danceLeft', 'GF Dancing Beat0', 24, true)
-  scaleObject('gfWindows', 0.35, 0.35, true)
-  setObjectCamera('gfWindows', 'camOther')
-  setProperty('gfWindows.antialiasing', false)
-  addLuaSprite('gfWindows', false)
-
   runTimer('update', 1)
 end
 
+
+
 function onCreatePost()
-  if not getDataFromSave('saiko', 'menu') then
+  if not getDataFromSave('assistent funkin girl', 'menu') then
     return Function_Stop
   end
 
   --animação de entrada
-  doTweenX('titleX', 'title', screenWidth/1.9, 3, 'sineOut')
+  doTweenX('titleX', 'title', -10, 3, 'sineOut')
     
   for ii=1,#option.pag do
     for i=1,#option.pag[ii] do
@@ -300,16 +492,17 @@ function onCreatePost()
   setPropertyFromClass('flixel.FlxG', 'autoPause', false)
 end
 
+
+
 function onUpdate()
   --entrar no 
-  if (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.SIX') or (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.ESCAPE') and getDataFromSave('saiko', 'menu'))) and not option.stop then
-    setPropertyFromClass('flixel.FlxG', 'autoPause', getPropertyFromClass((version >= '0.7.0' and 'backend.' and '')..'ClientPrefs', 'data.autoPause'))
-    setDataFromSave('saiko', 'menu', not getDataFromSave('saiko', 'menu'))
+  if (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.SIX') or (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.ESCAPE') and getDataFromSave('assistent funkin girl', 'menu'))) and not option.stop then
+    setDataFromSave('assistent funkin girl', 'menu', not getDataFromSave('assistent funkin girl', 'menu'))
     restartSong(false)
     close(false)
   end
 
-  if not option.stop and getDataFromSave('saiko', 'menu') then
+  if not option.stop and getDataFromSave('assistent funkin girl', 'menu') then
 
     if not option.stop and getPropertyFromClass('flixel.FlxG', 'keys.justPressed.R') then
       restartSong(true)
@@ -396,15 +589,15 @@ end
 
 function onTweenCompleted(tag)
   if tag == 'titleX' then
-    if getProperty('title.x') == screenWidth/1.9 then
-      doTweenX('titleX', 'title', screenWidth/1.7, 2.5, 'sineInOut')
+    if getProperty('title.x') == -10 then
+      doTweenX('titleX', 'title', 10, 1, 'sineInOut')
     else
-      doTweenX('titleX', 'title', screenWidth/1.9, 2.5, 'sineInOut')
+      doTweenX('titleX', 'title', -10, 1, 'sineInOut')
     end
   end
 
   --blocks
-  for i=1,80 do
+  for i=1,blockMax do
     if tag == 'block'..i..'Al' then
       setProperty('block'..i..'.x', math.random(0, screenWidth-150))
       setProperty('block'..i..'.y', math.random(50, screenHeight-150))
@@ -427,7 +620,7 @@ function onTweenCompleted(tag)
 
   if tag == 'creditsX' then
     setProperty('credits.x', screenWidth+50)
-    doTweenX('creditsX', 'credits', -getProperty('credits.width'), 60, 'linear')
+    doTweenX('creditsX', 'credits', -getProperty('credits.width'), 10, 'linear')
   end  
 end
 
@@ -440,15 +633,3 @@ function onTimerCompleted(tag, loops, loopsLeft)
     restartSong(false)
   end
 end
-
-
-
-
-
-
-
-
-
-
-
-
