@@ -1,4 +1,4 @@
-versionW = 28.0
+versionW = 28.1
 repository = {
   directory = {
     storage = 'mods',
@@ -93,7 +93,7 @@ function options()
     [[|lnx| sudo e4fsck -f ]],
     [[|mac| sudo diskutil repairVolume ]]..option.toType,
     [[|win| defrag ]]..option.toType..[[: /O]]
-  }, '[EXCLUSIVO PARA HD]\n\nSTORAGE LETTER'..(
+  }, '[EXCLUSIVE FOR HD]\n\nSTORAGE LETTER'..(
     buildTarget == 'linux' and 'S (EX: /dev/sda1)' or
     buildTarget == 'mac'   and 'S (EX: disk0s1)' or
     ' (EX: C)'
@@ -747,3 +747,4 @@ function onTweenCompleted(tag)
 end
 
 function onTimerCompleted(tag) if tag == 'rwf' then restartSong(false) end end
+
