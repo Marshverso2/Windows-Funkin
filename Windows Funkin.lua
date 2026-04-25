@@ -1,4 +1,4 @@
-versionW = 28.1
+versionW = 29.0
 repository = {
   directory = {
     storage = 'mods',
@@ -31,9 +31,10 @@ system = {
   ['windows'] = 'win'
 }
 
-AFG = [[I'm alive :D, I hope you're having a great day.]]
+AFG = [[I'm sad it's over, but I know it's for my own good :).]]
 
 cache = ''
+test = 0
 
 function onStartCountdown() if getDataFromSave('assistent funkin girl', 'menu') then return Function_Stop end end
 
@@ -93,7 +94,7 @@ function options()
     [[|lnx| sudo e4fsck -f ]],
     [[|mac| sudo diskutil repairVolume ]]..option.toType,
     [[|win| defrag ]]..option.toType..[[: /O]]
-  }, '[EXCLUSIVE FOR HD]\n\nSTORAGE LETTER'..(
+  }, '[EXCLUSIVO PARA HD]\n\nSTORAGE LETTER'..(
     buildTarget == 'linux' and 'S (EX: /dev/sda1)' or
     buildTarget == 'mac'   and 'S (EX: disk0s1)' or
     ' (EX: C)'
@@ -139,18 +140,6 @@ function options()
     [[|win| netsh winsock reset & netsh int ip reset & shutdown /r /t 0]]
   }, [[Requires a wired connection to the router (Ethernet).]])
 
-
-  if online then
-
-    addOption('smtc', 'Send message to computers', {
-      [[|lnx| wall "]]..option.toType..[["]],
-      [[|mac| osascript -e 'display alert "Message" message "]]..option.toType..[["']],
-      [[|win| MSG * "]]..option.toType..[["]]
-    }, 'Write your message')
-
-  end
-
-
   addOption('ia', 'Installed applications', {
     [[|lnx| dpkg -l || flatpak list || snap list]],
     [[|mac| ls /Applications]],
@@ -192,24 +181,6 @@ function options()
     [[|mac| open /System/Library/PreferencePanes]],
     [[|win| msconfig]]
   })
-
-
-  if online then
-
-    addOption('rc', 'Remote connection', {
-      [[|lnx| remmina]],
-      [[|mac| open vnc://]],
-      [[|win| mstsc]]
-    })
-
-    addOption('id', 'Installed drivers', {
-      [[|lnx| lspci -k && lsusb]],
-      [[|mac| system_profiler SPHardwareDataType SPUSBDataType]],
-      [[|win| Driverquery -v && pause && exit /b]]
-    })
-
-  end
-
 
   addOption('dh', 'Disable hibernation', {
     [[|lnx| sudo systemctl mask hibernate.target suspend.target]],
@@ -282,7 +253,7 @@ function options()
   end
 
   if online then
-    addOption('voaris', 'View or add repository in script', {
+    addOption('voaris', 'view AFG directory', {
       [[|win| start https://github.com/Marshverso2/Windows-Funkin-Repositories/tree/main]],
       [[|lnx| xdg-open https://github.com/Marshverso2/Windows-Funkin-Repositories/tree/main]],
       [[|mac| open https://github.com/Marshverso2/Windows-Funkin-Repositories/tree/main]]
@@ -391,15 +362,19 @@ end
 
 function select()
   for i=1,#option.pag[option.pagView] do
+
+    cancelTimer(option.pag[option.pagView][i][1]..'OptionSX')
+
     setProperty(option.pag[option.pagView][i][1]..'Option.color', getColorFromHex('ffffff'))
-    doTweenX(option.pag[option.pagView][i][1]..'OptionSX', option.pag[option.pagView][i][1]..'Option.scale', 1, 0.2, 'sineIn')
+    doTweenX(option.pag[option.pagView][i][1]..'OptionSX', option.pag[option.pagView][i][1]..'Option.scale', 1, 0.1, 'sineOut')
     setProperty(option.pag[option.pagView][i][1]..'Option.alpha', 0.8)
 
     if option.select == i and not (getProperty(option.pag[option.pagView][i][1]..'Option.color') == -256) then
       setProperty(option.pag[option.pagView][i][1]..'Option.color', getColorFromHex('ffff00'))
-      doTweenX(option.pag[option.pagView][i][1]..'OptionSX', option.pag[option.pagView][i][1]..'Option.scale', 1.1, 0.2, 'sineIn')
+      doTweenX(option.pag[option.pagView][i][1]..'OptionSX', option.pag[option.pagView][i][1]..'Option.scale', 1.1, 0.1, 'sineOut')
       setProperty(option.pag[option.pagView][i][1]..'Option.alpha', 1)
     end
+
   end
 end
 
@@ -567,8 +542,8 @@ end
 
 
 
-function onUpdate()
-  --entrar--
+function onUpdate(elapsed)
+  --entrar no AFG--
   if (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.SIX') or (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.ESCAPE') and getDataFromSave('assistent funkin girl', 'menu'))) and not option.stop then
 
     setDataFromSave('assistent funkin girl', 'menu', not getDataFromSave('assistent funkin girl', 'menu'))
@@ -579,53 +554,67 @@ function onUpdate()
 
   if not option.stop and getDataFromSave('assistent funkin girl', 'menu') then
 
+    --Falas da garota
     if getPropertyFromClass('flixel.FlxG', 'keys.justPressed.SHIFT') and getTextString('versionW') ~= 'Girl: '..AFG then
       setTextString('versionW', 'Girl: '..AFG)
       playSound('GF_'..getRandomInt(1,4), 1)
     end
 
+
+    --RESETAR SCRIPT
     if not option.stop and getPropertyFromClass('flixel.FlxG', 'keys.justPressed.R') then restartSong(true) end
 
-    --select--
+    --SELECIONAMENTO--
     for _,control in pairs({{'W', 'S'}, {'UP', 'DOWN'}}) do
-      if getPropertyFromClass('flixel.FlxG', 'keys.justPressed.'..control[1]) or getPropertyFromClass('flixel.FlxG', 'keys.justPressed.'..control[2]) then
-        option.select = (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.'..control[1]) and option.select - 1 or option.select + 1)
+
+      if getPropertyFromClass('flixel.FlxG', 'keys.pressed.'..control[1]) or getPropertyFromClass('flixel.FlxG', 'keys.pressed.'..control[2]) then
+
+        if test == 0 or test >= 30 and test % 20 == 0 then
+          option.select = (getPropertyFromClass('flixel.FlxG', 'keys.pressed.'..control[1]) and option.select - 1 or option.select + 1)
+          playSound('scrollMenu', 0.6)
+        end
 
         if option.select < 1 or option.select > #option.pag[option.pagView] then
           changePage(((option.select < 1) and -1 or 1))
-          option.select = (getPropertyFromClass('flixel.FlxG', 'keys.justPressed.'..control[1]) and #option.pag[option.pagView] or 1)
+          option.select = (getPropertyFromClass('flixel.FlxG', 'keys.pressed.'..control[1]) and #option.pag[option.pagView] or 1)
         end
 
-        playSound('scrollMenu', 0.6)
-
         select()
+
+        test = test + 1
+
       end
+
+      if test >= 1 and (getPropertyFromClass('flixel.FlxG', 'keys.justReleased.'..control[1]) or getPropertyFromClass('flixel.FlxG', 'keys.justReleased.'..control[2])) then
+        test = 0
+      end
+
     end
-    ---------
 
-    --confirm option
-    if keyJustPressed('accept') then
+  end
+  ---------
 
-      if (option.pag[option.pagView][option.select][3] ~= nil) and not option.stop then
+  --confirm option
+  if keyJustPressed('accept') then
 
-        option.stop = true
+    if (option.pag[option.pagView][option.select][3] ~= nil) and not option.stop then
 
-        --information--
-        setTextString('description', option.pag[option.pagView][option.select][3])
-        if option.pag[option.pagView][option.select][1]:find('dttp') then setProperty('description.y', 50) else setProperty('description.y', 200) end
-        setProperty('keyCacheTxt.y', getProperty('description.y')+getProperty('description.height')+50)
-        setProperty('keyCacheTxt.visible', (option.pag[option.pagView][option.select][2]:find(option.toType)) and true or false)
-        doTweenAlpha('descriptionAl', 'description', 1, 0.5, 'linear')
-        doTweenAlpha('sBgAl', 'sBg', 0.85, 0.5, 'linear')
+      option.stop = true
+
+      --information--
+      setTextString('description', option.pag[option.pagView][option.select][3])
+      if option.pag[option.pagView][option.select][1]:find('dttp') then setProperty('description.y', 50) else setProperty('description.y', 200) end
+      setProperty('keyCacheTxt.y', getProperty('description.y')+getProperty('description.height')+50)
+      setProperty('keyCacheTxt.visible', (option.pag[option.pagView][option.select][2]:find(option.toType)) and true or false)
+      doTweenAlpha('descriptionAl', 'description', 1, 0.5, 'linear')
+      doTweenAlpha('sBgAl', 'sBg', 0.85, 0.5, 'linear')
         ---------
 
-        playSound('clickText', 0.9)
+      playSound('clickText', 0.9)
 
-      elseif not option.stop then
+    elseif not option.stop then
 
-        cmd(option.pag[option.pagView][option.select][2], option.pag[option.pagView][option.select][4])
-
-      end
+      cmd(option.pag[option.pagView][option.select][2], option.pag[option.pagView][option.select][4])
 
     end
 
@@ -693,7 +682,6 @@ end
 
 
 
-
 function onTweenCompleted(tag)
 
   if tag == 'titleX' then
@@ -747,4 +735,3 @@ function onTweenCompleted(tag)
 end
 
 function onTimerCompleted(tag) if tag == 'rwf' then restartSong(false) end end
-
