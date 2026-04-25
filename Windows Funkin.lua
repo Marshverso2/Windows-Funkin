@@ -191,10 +191,8 @@ function options()
 
   if buildTarget:find('windows') then
     addOption('dwu', 'Disable windows update', {
-      [[|win| sc config wuauserv start= disabled && net stop wuauserv && sc config bits start= disabled && net stop bits]]
-    })
+      [[|win| Stop-Service -Name wuauserv -Force -ErrorAction Stop && Set-Service -Name wuauserv -StartupType Disabled]]}, nil, true)
   end
-
 
   addOption('pd', 'Power diagnosis', {
     [[|lnx| sudo powertop]],
